@@ -1,0 +1,86 @@
+﻿@model IList<FootballPredictor.Controllers.HomeController.TableData>
+
+@{
+    ViewBag.Title = "Euro 2012 Predictor";
+    IEnumerable<FootballPredictor.Models.Score> scores = ViewBag.Scores as IEnumerable<FootballPredictor.Models.Score>;
+}
+
+<form class="span14" action="" method="post">
+
+@foreach (var g in Model)
+{
+    var group = g.Group;
+    
+    <div class="span3">
+        <h3>@group.Name</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Country</th>
+                    <th>W</th>
+                    <th>L</th>
+                    <th>D</th>
+                    <th>GD</th>
+                    <th>Pts</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var teamData in g.TeamResults.OrderByDescending(x=>x.points).ThenByDescending(x=>x.goals))
+                {
+                    var team = teamData.Team;
+                    
+                <tr>
+                    <td>@team.Name</td>
+                    <td>@teamData.wins</td>
+                    <td>@teamData.losses</td>
+                    <td>@teamData.draws</td>
+                    <td>@teamData.goals</td>
+                    <td>@teamData.points</td>
+                </tr>
+                }
+            </tbody>
+        </table>
+        <div class="fixtures">
+            @foreach (var fixtures in group.Fixtures.GroupBy(x => x.Date.Date))
+            {
+                var date = fixtures.First().Date;
+                <h4>@date.ToString("dd/MM/yyyy")</h4>
+                
+                foreach (var fixture in fixtures)
+                {
+                    FootballPredictor.Models.Score score = null;
+
+                    if (scores!= null && scores.Any())
+                    {
+                        score = scores.FirstOrDefault(x => x.Fixture == fixture);
+                    }
+
+                    if (score != null)
+                    {
+                        <span class="home_team">@fixture.Home.Name</span>
+                        <input type="text" value="@score.HomeScore" class="score" name="home_@(fixture.Id)"/> 
+                        <span>v</span>
+                        <input type="text" value="@score.AwayScore" class="score" name="away_@(fixture.Id)"/>
+                        <span class="away_team">@fixture.Away.Name</span>
+                    }
+                    else
+                    {
+                        <span class="home_team">@fixture.Home.Name</span>
+                        <input type="text" placeholder="0" class="score" name="home_@(fixture.Id)"/> 
+                        <span>v</span>
+                        <input type="text" placeholder="0" class="score" name="away_@(fixture.Id)"/>
+                        <span class="away_team">@fixture.Away.Name</span>
+                    }
+                    
+
+                
+                    <br /><span class="time">@fixture.Date.ToShortTimeString()</span><br />
+                }
+            }
+            <input type="submit" class="btn btn-primary" value="Submit @group.Name Results" />
+        </div>
+
+    </div>
+}
+
+</form>
